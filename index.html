@@ -9,49 +9,35 @@
   <body>
     <h1>Pokémon TCG: Destined Rivals Hit Rates</h1>
 
+    <!-- Hit Rate Chart -->
     <div class="chart-container">
       <canvas id="hitRateChart"></canvas>
-
       <div class="color-key">
-        <div>
-          <span style="background-color: #1f77b4"></span>
-          <span>Rare - 71.87%</span>
-        </div>
-        <div>
-          <span style="background-color: #00b7ff"></span>
-          <span>Double Rare - 14.36%</span>
-        </div>
-        <div>
-          <span style="background-color: #ff7f0e"></span>
-          <span>Ultra Rare - 4.79%</span>
-        </div>
-        <div>
-          <span style="background-color: #8e82f7"></span>
-          <span>Illustration Rare - 7.19%</span>
-        </div>
-        <div>
-          <span style="background-color: #d62728"></span>
-          <span>Special Illustration Rare - 1.03%</span>
-        </div>
-        <div>
-          <span style="background-color: #ffc04b"></span>
-          <span>Hyper Rare - 0.76%</span>
-        </div>
+        <!-- (same color key content) -->
       </div>
     </div>
 
+    <!-- Search -->
     <div class="search-box">
       <h2>Search for a Pokémon Card</h2>
       <input id="cardInput" placeholder="e.g. Charizard" />
       <button onclick="searchCard()">Search</button>
     </div>
 
+    <!-- Set Browser -->
+    <div class="search-box">
+      <h2>Browse Cards by Set</h2>
+      <select id="setSelect" onchange="browseSet(this.value)">
+        <option value="">-- Select a Set --</option>
+      </select>
+    </div>
+
+    <!-- Results -->
     <div id="cardResults"></div>
 
     <script>
       // Hit Rate Pie Chart
       const ctx = document.getElementById("hitRateChart").getContext("2d");
-
       new Chart(ctx, {
         type: "pie",
         data: {
@@ -96,26 +82,61 @@
         },
       });
 
-      // Card Search Function
+      // Card search by name
       async function searchCard() {
         const name = document.getElementById("cardInput").value;
         const res = await fetch(`/api/card/${encodeURIComponent(name)}`);
         const cards = await res.json();
+        displayCards(cards);
+      }
+
+      // Browse cards by set ID
+      async function browseSet(setId) {
+        if (!setId) return;
+        const res = await fetch(
+          `https://api.pokemontcg.io/v2/cards?q=set.id:${setId}`,
+          {
+            headers: { "X-Api-Key": "YOUR_API_KEY_HERE" }, // Replace with your real key or fetch from server
+          }
+        );
+        const data = await res.json();
+        displayCards(data.data);
+      }
+
+      // Load set list into dropdown
+      async function loadSets() {
+        const res = await fetch(`https://api.pokemontcg.io/v2/sets`, {
+          headers: { "X-Api-Key": "YOUR_API_KEY_HERE" },
+        });
+        const data = await res.json();
+        const select = document.getElementById("setSelect");
+
+        data.data.forEach((set) => {
+          const option = document.createElement("option");
+          option.value = set.id;
+          option.textContent = `${set.name} (${set.id})`;
+          select.appendChild(option);
+        });
+      }
+
+      // Show cards
+      function displayCards(cards) {
         const container = document.getElementById("cardResults");
         container.innerHTML = "";
-
         cards.forEach((card) => {
           const div = document.createElement("div");
           div.className = "card";
           div.innerHTML = `
             <h3>${card.name}</h3>
-            <img src="${card.images.small}" />
+            <img src="${card.images.small}" alt="${card.name}" />
             <p>HP: ${card.hp || "?"}</p>
             <p>Set: ${card.set.name}</p>
           `;
           container.appendChild(div);
         });
       }
+
+      loadSets(); // Populate set dropdown on page load
     </script>
   </body>
 </html>
