@@ -101,3 +101,16 @@ button {
 button:hover {
   background: #0056b3;
 }
+.card {
+  display: inline-block;
+  margin: 10px;
+  padding: 10px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+.card img {
+  width: 180px;
+  height: auto;
+}
