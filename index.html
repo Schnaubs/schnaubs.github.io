@@ -1,142 +1,129 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>Pokémon Hit Rate Chart & Card Lookup</title>
-    <link rel="stylesheet" href="index.css" />
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
-  <body>
-    <h1>Pokémon TCG: Destined Rivals Hit Rates</h1>
 
-    <!-- Hit Rate Chart -->
-    <div class="chart-container">
-      <canvas id="hitRateChart"></canvas>
-      <div class="color-key">
-        <!-- (same color key content) -->
-      </div>
-    </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nolan Schnauber | Home</title>
+    <style>
+        html {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
 
-    <!-- Search -->
-    <div class="search-box">
-      <h2>Search for a Pokémon Card</h2>
-      <input id="cardInput" placeholder="e.g. Charizard" />
-      <button onclick="searchCard()">Search</button>
-    </div>
+        body {
+            margin: 0;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e, #16213e, #0f3460);
+            color: #f1f1f1;
+        }
 
-    <!-- Set Browser -->
-    <div class="search-box">
-      <h2>Browse Cards by Set</h2>
-      <select id="setSelect" onchange="browseSet(this.value)">
-        <option value="">-- Select a Set --</option>
-      </select>
-    </div>
+        header {
+            background: #16213e;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
 
-    <!-- Results -->
-    <div id="cardResults"></div>
+        header {
+            background: #0f3460;
+            padding: 15px;
+            text-align: center;
+        }
 
-    <script>
-      // Hit Rate Pie Chart
-      const ctx = document.getElementById("hitRateChart").getContext("2d");
-      new Chart(ctx, {
-        type: "pie",
-        data: {
-          labels: [
-            "Rare",
-            "Double Rare",
-            "Ultra Rare",
-            "Illustration Rare",
-            "Special Illustration Rare",
-            "Hyper Rare",
-          ],
-          datasets: [
-            {
-              data: [71.87, 14.36, 4.79, 7.19, 1.03, 0.76],
-              backgroundColor: [
-                "#1f77b4",
-                "#00b7ff",
-                "#ff7f0e",
-                "#8e82f7",
-                "#d62728",
-                "#ffc04b",
-              ],
-              borderColor: "#ffffff",
-              borderWidth: 2,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          plugins: {
-            legend: { display: false },
-            tooltip: {
-              callbacks: {
-                label: function (context) {
-                  const value = context.parsed;
-                  const label = context.label;
-                  return `${label}: ${value}%`;
-                },
-              },
-            },
-          },
-        },
-      });
+        nav {
+            margin-top: 10px;
+        }
 
-      // Card search by name
-      async function searchCard() {
-        const name = document.getElementById("cardInput").value;
-        const res = await fetch(`/api/card/${encodeURIComponent(name)}`);
-        const cards = await res.json();
-        displayCards(cards);
-      }
+        nav a {
+            color: #fff;
+            margin: 0 12px;
+            text-decoration: none;
+            font-weight: bold;
+        }
 
-      // Browse cards by set ID
-      async function browseSet(setId) {
-        if (!setId) return;
-        const res = await fetch(
-          `https://api.pokemontcg.io/v2/cards?q=set.id:${setId}`,
-          {
-            headers: { "X-Api-Key": "YOUR_API_KEY_HERE" }, // Replace with your real key or fetch from server
-          }
-        );
-        const data = await res.json();
-        displayCards(data.data);
-      }
+        nav a:hover {
+            color: #e94560;
+        }
 
-      // Load set list into dropdown
-      async function loadSets() {
-        const res = await fetch(`https://api.pokemontcg.io/v2/sets`, {
-          headers: { "X-Api-Key": "YOUR_API_KEY_HERE" },
-        });
-        const data = await res.json();
-        const select = document.getElementById("setSelect");
+        main {
+            max-width: 900px;
+            margin: auto;
+            padding: 40px 20px;
+        }
 
-        data.data.forEach((set) => {
-          const option = document.createElement("option");
-          option.value = set.id;
-          option.textContent = `${set.name} (${set.id})`;
-          select.appendChild(option);
-        });
-      }
+        section {
+            margin-bottom: 40px;
+        }
 
-      // Show cards
-      function displayCards(cards) {
-        const container = document.getElementById("cardResults");
-        container.innerHTML = "";
-        cards.forEach((card) => {
-          const div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `
-            <h3>${card.name}</h3>
-            <img src="${card.images.small}" alt="${card.name}" />
-            <p>HP: ${card.hp || "?"}</p>
-            <p>Set: ${card.set.name}</p>
-          `;
-          container.appendChild(div);
-        });
-      }
+        h2 {
+            color: #fff;
+            border-bottom: 2px solid #e94560;
+            padding-bottom: 5px;
+        }
 
-      loadSets(); // Populate set dropdown on page load
-    </script>
-  </body>
+        ul {
+            padding-left: 20px;
+        }
+
+        .note {
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            font-size: 0.9em;
+            background: #16213e;
+            color: white;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Nolan Schnauber</h1>
+        <nav>
+            <a href="index.html">Home</a>
+            <a href="resume.html">Resume</a>
+            <a href="programming.html">Programming</a>
+            <a href="music.html">Music</a>
+            <a href="gallery.html">Gallery</a>
+            <a href="projects.html">Projects</a>
+        </nav>
+    </header>
+    <main>
+        <section>
+            <h2>Who Am I?</h2>
+            <p>
+                I’m <strong>Nolan Schnauber</strong> — a programmer, musician, and student from Western Pennsylvania.
+                I’m passionate about creating — whether that’s building software, performing music, or chasing big
+                ideas.
+                This website is my personal hub for sharing my work, interests, and fun side projects.
+            </p>
+        </section>
+        <section>
+            <h2>What I Do</h2>
+            <p>
+                🎵 As a <strong>musician</strong>, I play violin, piano, trumpet, and sing. I compose both classical and
+                jazz music.
+                💻 As a <strong>programmer</strong>, I work in C++ and experiment with Arduino, Unity, Unreal Engine,
+                and more.
+                🌍 As a <strong>person</strong>, I love traveling, performing, and pushing myself to grow.
+            </p>
+        </section>
+        <section>
+            <h2>Explore My Pages</h2>
+            <p>Use the navigation bar above to check out my resume, music, programming, photo gallery, and even a hidden
+                cult page 👀.</p>
+        </section>
+    </main>
+    <footer style="float: bottom;">© 2025 Nolan Schnauber</footer>
+</body>
+
 </html>
