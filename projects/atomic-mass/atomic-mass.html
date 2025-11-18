@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Molar Mass Calculator (with Steps)</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        :root {
+            --card: #fff;
+            --ink: #1f2937;
+            --muted: #6b7280;
+            --bg: #f6f7fb;
+            --accent: #2563eb;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, Arial, sans-serif;
+            background: var(--bg);
+            color: var(--ink);
+        }
+
+        .wrap {
+            max-width: 900px;
+            margin: 40px auto;
+            padding: 24px;
+            background: var(--card);
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .06);
+        }
+
+        h1 {
+            margin: 0 0 12px;
+            font-size: 28px;
+        }
+
+        p.help {
+            margin-top: 0;
+            color: var(--muted);
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+
+        input[type=text] {
+            flex: 1;
+            min-width: 260px;
+            padding: 12px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 16px;
+        }
+
+        button {
+            padding: 12px 16px;
+            border: 0;
+            border-radius: 12px;
+            background: var(--accent);
+            color: #fff;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .result {
+            margin-top: 14px;
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .mute {
+            color: var(--muted);
+            font-weight: 500;
+        }
+
+        .section {
+            margin-top: 22px;
+            padding-top: 18px;
+            border-top: 1px dashed #e5e7eb;
+        }
+
+        .kvs {
+            display: grid;
+            grid-template-columns: 160px 1fr;
+            gap: 8px 12px;
+        }
+
+        .mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        }
+
+        details {
+            background: #fafafa;
+            padding: 12px 14px;
+            border-radius: 12px;
+            border: 1px solid #eee;
+        }
+
+        summary {
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        ul.tree {
+            list-style: none;
+            padding-left: 18px;
+            margin: 8px 0 0;
+            border-left: 2px solid #e5e7eb;
+        }
+
+        ul.tree li {
+            margin: 6px 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 8px 10px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+
+        th {
+            background: #fafafa;
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: #eef2ff;
+            color: #3730a3;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .examples {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        .chip {
+            border: 1px solid #e5e7eb;
+            padding: 6px 10px;
+            border-radius: 999px;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .chip:hover {
+            background: #f3f4f6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <h1>Molar Mass Calculator</h1>
+        <p class="help">Parses parentheses, <span class="mono">·</span> hydrates, and Unicode subscripts (e.g., <span
+                class="mono">Ca₃(PO₄)₂</span>). All atomic masses rounded to the nearest hundredth.</p>
+
+        <div class="row">
+            <input id="formula" type="text" placeholder="Enter formula (e.g., Ca3(PO4)2 or CuSO4·5H2O)" />
+            <button id="calcBtn">Calculate</button>
+        </div>
+        <div class="examples">
+            <span class="mute">Examples:</span>
+            <span class="chip" data-ex="Ca₃(PO₄)₂">Ca₃(PO₄)₂</span>
+            <span class="chip" data-ex="C6H12O6">C6H12O6</span>
+            <span class="chip" data-ex="Al2(SO4)3">Al2(SO4)3</span>
+            <span class="chip" data-ex="CuSO4·5H2O">CuSO4·5H2O</span>
+            <span class="chip" data-ex="(NH4)2SO4">(NH4)2SO4</span>
+            <span class="chip" data-ex="Ca(OH)2">Ca(OH)2</span>
+        </div>
+
+        <div id="output"></div>
+    </div>
+
+    <script>
+        // --- Periodic table: 118 elements, rounded to 0.01 ---
+        const atomicMass = {
+            H: 1.01, He: 4.00, Li: 6.94, Be: 9.01, B: 10.81,
+            C: 12.01, N: 14.01, O: 16.00, F: 19.00, Ne: 20.18,
+            Na: 22.99, Mg: 24.31, Al: 26.98, Si: 28.09, P: 30.97,
+            S: 32.07, Cl: 35.45, Ar: 39.95, K: 39.10, Ca: 40.08,
+            Sc: 44.96, Ti: 47.87, V: 50.94, Cr: 52.00, Mn: 54.94,
+            Fe: 55.85, Co: 58.93, Ni: 58.69, Cu: 63.55, Zn: 65.38,
+            Ga: 69.72, Ge: 72.63, As: 74.92, Se: 78.97, Br: 79.90,
+            Kr: 83.80, Rb: 85.47, Sr: 87.62, Y: 88.91, Zr: 91.22,
+            Nb: 92.91, Mo: 95.95, Tc: 98.00, Ru: 101.07, Rh: 102.91,
+            Pd: 106.42, Ag: 107.87, Cd: 112.41, In: 114.82, Sn: 118.71,
+            Sb: 121.76, Te: 127.60, I: 126.90, Xe: 131.29, Cs: 132.91,
+            Ba: 137.33, La: 138.91, Ce: 140.12, Pr: 140.91, Nd: 144.24,
+            Pm: 145.00, Sm: 150.36, Eu: 151.96, Gd: 157.25, Tb: 158.93,
+            Dy: 162.50, Ho: 164.93, Er: 167.26, Tm: 168.93, Yb: 173.05,
+            Lu: 174.97, Hf: 178.49, Ta: 180.95, W: 183.84, Re: 186.21,
+            Os: 190.23, Ir: 192.22, Pt: 195.08, Au: 196.97, Hg: 200.59,
+            Tl: 204.38, Pb: 207.20, Bi: 208.98, Po: 209.00, At: 210.00,
+            Rn: 222.00, Fr: 223.00, Ra: 226.00, Ac: 227.00, Th: 232.04,
+            Pa: 231.04, U: 238.03, Np: 237.00, Pu: 244.00, Am: 243.00,
+            Cm: 247.00, Bk: 247.00, Cf: 251.00, Es: 252.00, Fm: 257.00,
+            Md: 258.00, No: 259.00, Lr: 262.00, Rf: 267.00, Db: 270.00,
+            Sg: 271.00, Bh: 270.00, Hs: 277.00, Mt: 278.00, Ds: 281.00,
+            Rg: 282.00, Cn: 285.00, Nh: 286.00, Fl: 289.00, Mc: 290.00,
+            Lv: 293.00, Ts: 294.00, Og: 294.00
+        };
+
+        // -------- Helpers --------
+        const fmt = n => Number(n).toFixed(2);
+        const subMap = { '₀': '0', '₁': '1', '₂': '2', '₃': '3', '₄': '4', '₅': '5', '₆': '6', '₇': '7', '₈': '8', '₉': '9' };
+        function normalize(input) {
+            let out = '';
+            for (const ch of input.replace(/\s+/g, '')) {
+                if (subMap[ch]) out += subMap[ch];
+                else if (ch === '[') out += '(';
+                else if (ch === ']') out += ')';
+                else if (ch === '{') out += '(';
+                else if (ch === '}') out += ')';
+                else out += ch;
+            }
+            return out;
+        }
+
+        // AST node builders
+        const Elem = (symbol, count = 1) => ({ type: 'elem', symbol, count, multiplier: 1 });
+        const Group = (children = [], multiplier = 1) => ({ type: 'group', children, multiplier });
+
+        // Parse one contiguous part (no hydrate dot inside)
+        function parsePart(s) {
+            let i = 0;
+            function readInt() {
+                let j = i, v = '';
+                while (j < s.length && /\d/.test(s[j])) { v += s[j++]; }
+                if (!v) return null;
+                i = j;
+                return parseInt(v, 10);
+            }
+            function readElement() {
+                if (i >= s.length || !/[A-Z]/.test(s[i])) throw err(`Expected element at position ${i}`);
+                let sym = s[i++];
+                if (i < s.length && /[a-z]/.test(s[i])) sym += s[i++];
+                if (!(sym in atomicMass)) throw err(`Unknown element "${sym}" at position ${i - 1}`);
+                const num = readInt();
+                return Elem(sym, num || 1);
+            }
+            function parseGroupInner() {
+                const children = [];
+                while (i < s.length && s[i] !== ')') {
+                    if (s[i] === '(') {
+                        i++; // skip '('
+                        const child = parseGroupInner();
+                        if (s[i] !== ')') throw err(`Missing ")" at position ${i}`);
+                        i++; // skip ')'
+                        const mult = readInt() || 1;
+                        child.multiplier = mult;
+                        children.push(child);
+                    } else if (/[A-Z]/.test(s[i])) {
+                        children.push(readElement());
+                    } else {
+                        throw err(`Invalid character "${s[i]}" at position ${i}`);
+                    }
+                }
+                return Group(children, 1);
+            }
+            const root = parseGroupInner();
+            if (i !== s.length) throw err(`Unexpected trailing input at position ${i}`);
+            return root;
+        }
+
+        // Parse full formula, supporting hydrates: split on · or .
+        function parseFormula(formulaRaw) {
+            const s0 = normalize(formulaRaw);
+            if (!s0) throw err("Empty formula.");
+            const parts = s0.split(/[·.]/g).filter(Boolean);
+            const top = Group([], 1);
+
+            for (let part of parts) {
+                // allow a leading coefficient like "5H2O"
+                let m = part.match(/^\d+/);
+                let coeff = m ? parseInt(m[0], 10) : 1;
+                if (m) part = part.slice(m[0].length);
+                if (!part) throw err("Missing group after multiplier.");
+                const node = parsePart(part);
+                node.multiplier *= coeff;
+                top.children.push(node);
+            }
+            return { normalized: s0, ast: top };
+        }
+
+        // Mass + steps calculation
+        function massOfElement(sym) { return atomicMass[sym]; }
+
+        function computeMass(node, factor = 1, steps = []) {
+            if (node.type === 'elem') {
+                const count = node.count * factor;
+                const m = massOfElement(node.symbol) * count;
+                steps.push({
+                    kind: 'elem',
+                    text: `${node.symbol}: ${node.count} × ${factor} × ${fmt(massOfElement(node.symbol))} = ${fmt(m)} g/mol`
+                });
+                return m;
+            } else {
+                const newFactor = factor * node.multiplier;
+                const local = [];
+                let subtotal = 0;
+                for (const ch of node.children) {
+                    subtotal += computeMass(ch, newFactor, local);
+                }
+                steps.push({
+                    kind: 'group',
+                    text: `Group × ${node.multiplier} → subtotal = ${fmt(subtotal)} g/mol`,
+                    children: local
+                });
+                return subtotal;
+            }
+        }
+
+        // Tally elements (flatten counts)
+        function tally(node, factor = 1, bag = {}) {
+            if (node.type === 'elem') {
+                const n = node.count * factor;
+                bag[node.symbol] = (bag[node.symbol] || 0) + n;
+            } else {
+                const f = factor * node.multiplier;
+                for (const ch of node.children) tally(ch, f, bag);
+            }
+            return bag;
+        }
+
+        // Render helpers
+        function renderSteps(step) {
+            if (!step) return '';
+            if (Array.isArray(step)) {
+                return `<ul class="tree">${step.map(renderSteps).join('')}</ul>`;
+            }
+            if (step.kind === 'elem') {
+                return `<li class="mono">${step.text}</li>`;
+            }
+            // group
+            return `<li><div class="mono">${step.text}</div>${step.children?.length ? `<ul class="tree">${step.children.map(renderSteps).join('')}</ul>` : ''}</li>`;
+        }
+
+        function err(msg) { const e = new Error(msg); e.name = "ParseError"; return e; }
+
+        // Main calculate
+        function calculate() {
+            const formulaInput = document.getElementById('formula').value.trim();
+            const out = document.getElementById('output');
+            out.innerHTML = '';
+            try {
+                const { normalized, ast } = parseFormula(formulaInput);
+                const steps = [];
+                const total = computeMass(ast, 1, steps);
+                const counts = tally(ast);
+
+                // Build UI
+                const elRows = Object.keys(counts).sort().map(sym => {
+                    const n = counts[sym];
+                    const m = atomicMass[sym];
+                    return `<tr>
+            <td class="mono">${sym}</td>
+            <td class="mono">${n}</td>
+            <td class="mono">${fmt(m)}</td>
+            <td class="mono">${fmt(n * m)}</td>
+          </tr>`;
+                }).join('');
+
+                out.innerHTML = `
+          <div class="result">Molar mass = ${fmt(total)} g/mol</div>
+
+          <div class="section kvs">
+            <div class="mute">Normalized formula</div>
+            <div class="mono">${normalized}</div>
+
+            <div class="mute">Interpretation</div>
+            <div><span class="tag">Parentheses</span> <span class="tag">Hydrates</span> <span class="tag">Subscripts</span></div>
+          </div>
+
+          <div class="section">
+            <details open>
+              <summary>Step 1 — Count atoms (expanded)</summary>
+              <div style="overflow:auto">
+                <table>
+                  <thead><tr><th>Element</th><th>Total Count</th><th>Atomic Mass</th><th>Contribution</th></tr></thead>
+                  <tbody>${elRows}</tbody>
+                </table>
+              </div>
+            </details>
+          </div>
+
+          <div class="section">
+            <details open>
+              <summary>Step 2 — Group breakdown & contributions</summary>
+              ${renderSteps(steps)}
+            </details>
+          </div>
+
+          <div class="section">
+            <details>
+              <summary>Notes</summary>
+              <ul>
+                <li>Atomic masses are rounded to the nearest hundredth by design.</li>
+                <li>Supports Unicode subscripts (e.g., ₁₂₃), square/curly brackets, and hydrates via <span class="mono">·</span> or <span class="mono">.</span> (e.g., <span class="mono">CuSO4·5H2O</span>).</li>
+                <li>If you see “Unknown element”, check capitalization (e.g., <span class="mono">Co</span> vs <span class="mono">CO</span>).</li>
+              </ul>
+            </details>
+          </div>
+        `;
+            } catch (e) {
+                out.innerHTML = `<div class="result" style="color:#b91c1c">Error: ${e.message}</div>`;
+            }
+        }
+
+        // Wire up UI
+        document.getElementById('calcBtn').addEventListener('click', calculate);
+        document.getElementById('formula').addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') calculate();
+        });
+        document.querySelectorAll('.chip').forEach(chip => {
+            chip.addEventListener('click', () => {
+                document.getElementById('formula').value = chip.dataset.ex;
+                calculate();
+            });
+        });
+    </script>
+</body>
+
+</html>
