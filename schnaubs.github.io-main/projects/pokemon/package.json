@@ -1,0 +1,16 @@
+{
+  "name": "pokemon-tcg-app",
+  "version": "1.0.0",
+  "description": "A Pokémon TCG web app with hit rate chart and card search using PokéTCG API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Nolan Schnauber",
+  "license": "MIT",
+  "dependencies": {
+    "axios": "^1.6.7",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}

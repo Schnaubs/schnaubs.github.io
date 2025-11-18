@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Atomic Balancer — Chemistry Equation Balancer</title>
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body>
+
+<nav>
+  <a href="/index.html">Home</a>
+  <a href="/resume/index.html">Resume</a>
+  <a href="/programming/index.html">Programming</a>
+  <a href="/music/index.html">Music</a>
+  <a href="/gallery/index.html">Gallery</a>
+  <a href="/projects/index.html">Projects</a>
+</nav>
+
+<main>
+  <div class="wrap">
+    <div class="grid">
+      <div>
+        <label for="reactants">Reactants (comma-separated)</label>
+        <textarea id="reactants" rows="4" placeholder="e.g. H2, O2"></textarea>
+
+        <label for="products" style="margin-top:12px">Products (comma-separated)</label>
+        <textarea id="products" rows="4" placeholder="e.g. H2O"></textarea>
+
+        <div class="actions">
+          <button id="balanceBtn">Balance</button>
+          <button class="secondary" id="clearBtn">Clear</button>
+          <button class="secondary" id="exampleBtn">Load Examples</button>
+        </div>
+
+        <div class="small" style="margin-top:10px">Examples:</div>
+        <div class="examples" id="examples"></div>
+      </div>
+
+      <div>
+        <div class="small">Balanced equation</div>
+        <div class="output" id="output"><pre id="balanced">—</pre></div>
+
+        <div class="small" style="margin-top:12px">Steps / Diagnostics</div>
+        <div class="output" id="diag"><pre id="steps">No steps yet.</pre></div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  Tip: use formulas like Fe2(SO4)3 or Al(OH)3. Polyatomic groups and parentheses are supported.
+</footer>
+
+<script src="script.js"></script>
+
+</body>
+</html>
